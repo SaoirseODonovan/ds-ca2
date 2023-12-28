@@ -1,8 +1,6 @@
 /* eslint-disable import/extensions, import/no-absolute-path */
 import { SQSHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
-
+// import { sharp } from "/opt/nodejs/sharp-utils";
 import {
   GetObjectCommand,
   PutObjectCommandInput,
@@ -10,18 +8,19 @@ import {
   S3Client,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 const ddbDocClient = createDDbDocClient();
 const s3 = new S3Client();
 
 export const handler: SQSHandler = async (event) => {
-try {
   console.log("Event ", event);
   for (const record of event.Records) {
-    const recordBody = JSON.parse(record.body);
-    console.log('Raw SNS message ',JSON.stringify(recordBody))
-    if (recordBody.Records) {
-      for (const messageRecord of recordBody.Records) {
+    const recordMessage = JSON.parse(JSON.parse(record.body).Message);
+    console.log('Raw SNS message ', JSON.stringify(recordMessage))
+    if (recordMessage.Records) {
+      for (const messageRecord of recordMessage.Records) {
         const s3e = messageRecord.s3;
         const srcBucket = s3e.bucket.name;
         // Object key may have spaces or unicode non-ASCII characters.
@@ -36,44 +35,21 @@ try {
         const imageType = typeMatch[1].toLowerCase();
         if (imageType != "jpeg" && imageType != "png") {
           console.log(`Unsupported image type: ${imageType}`);
-          throw new Error(`Unsupported image type: ${imageType}.`);
+          throw new Error("Unsupported image type: ${imageType. ");
         }
+        
+        const putCommand = new PutCommand({
+          TableName: "Images",
+          Item: {
+            ImageName: srcKey,
+          },
+        });
 
-    //Reference for '.split': https://www.geeksforgeeks.org/typescript-string-split-method/
-    //isolate filename
-    const imageTitle = srcKey.split("/");
-    await ddbDocClient.send(
-      new PutCommand({
-        TableName: process.env.TABLE_NAME,
-        //'Key', not used for PutCommand 
-        Item: {
-          imageTitle: { imageTitle },
-        },
-      })
-    );
-};
-        // process image upload 
+        await ddbDocClient.send(putCommand);
       }
     }
-
-    return {
-      statusCode: 201,
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ message: "Image added" }),
-    };
-  } catch (error) {
-    console.log(JSON.stringify(error));
-    return {
-      statusCode: 500,
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ error }),
-    };
   }
-}   
+};
 
 function createDDbDocClient() {
   const ddbClient = new DynamoDBClient({ region: process.env.REGION });
