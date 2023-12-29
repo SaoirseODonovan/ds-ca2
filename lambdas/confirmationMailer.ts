@@ -49,7 +49,7 @@ async function sendEmailMessage(message: string) {
       },
       Subject: {
         Charset: "UTF-8",
-        Data: `New image Upload`,
+        Data: `New Image Upload`,
       },
     },
     Source: SES_EMAIL_FROM,
