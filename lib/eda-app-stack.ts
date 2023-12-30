@@ -48,7 +48,7 @@ export class EDAAppStack extends cdk.Stack {
     const newImageTopic = new sns.Topic(this, "NewImageTopic", {
       displayName: "New Image topic",
     });
-
+    
     const confirmationMailerFn = new lambdanode.NodejsFunction(this, "confirmation-mailer-function", {
       runtime: lambda.Runtime.NODEJS_18_X,
       memorySize: 1024,
@@ -63,11 +63,17 @@ export class EDAAppStack extends cdk.Stack {
       entry: `${__dirname}/../lambdas/rejectionMailer.ts`,
     });
 
+    const updateTableFn = new lambdanode.NodejsFunction(this, "update-table-function", {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      entry: `${__dirname}/../lambdas/updateTable.ts`,
+      timeout: cdk.Duration.seconds(10),
+    });
+
     //Reference for adding subscription to sns topic:https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_sns_subscriptions/LambdaSubscription.html
     newImageTopic.addSubscription(new subs.LambdaSubscription(confirmationMailerFn));
 
     newImageTopic.addSubscription(
-      new subs.SqsSubscription(imageProcessQueue)
+      new subs.SqsSubscription(imageProcessQueue) 
     );
 
     // Lambda functions
