@@ -10,18 +10,23 @@ export const handler: SNSHandler = async (event) => {
   
       if (message.Records) {
         for (const messageRecord of message.Records) {
-          const s3e = messageRecord.s3;
-          const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
+          //Referenece for eventName status check: https://stackoverflow.com/questions/48546482/how-to-get-file-size-from-aws-s3-objectremoveddelete-event and https://docs.aws.amazon.com/AmazonS3/latest/userguide/notification-how-to-event-types-and-destinations.html
+          //mostly just played around with exploring the options presented when 'messageRecord.' is inserted for possible variables available
+          if (messageRecord.eventName === 'ObjectRemoved:Delete') {
 
-          const deleteCommand = new DeleteCommand({
-          //process.env.TABLE_NAME,
-          TableName: "Images",
-          Key: {
-            ImageName: srcKey,
-          },
-        });
+            const s3e = messageRecord.s3;
+            const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
 
-        await ddbDocClient.send(deleteCommand);
+            const deleteCommand = new DeleteCommand({
+            //process.env.TABLE_NAME,
+              TableName: "Images",
+              Key: {
+                ImageName: srcKey,
+              },
+            });
+
+            await ddbDocClient.send(deleteCommand);
+        }
       }
     }
   }
