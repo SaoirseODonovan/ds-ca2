@@ -63,12 +63,12 @@ export class EDAAppStack extends cdk.Stack {
       entry: `${__dirname}/../lambdas/rejectionMailer.ts`,
     });
 
-    const updateTableFn = new lambdanode.NodejsFunction(this, "update-table-function", {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      memorySize: 1024,
-      timeout: cdk.Duration.seconds(3),
-      entry: `${__dirname}/../lambdas/updateTable.ts`,
-    });
+    // const updateTableFn = new lambdanode.NodejsFunction(this, "update-table-function", {
+    //   runtime: lambda.Runtime.NODEJS_18_X,
+    //   memorySize: 1024,
+    //   timeout: cdk.Duration.seconds(3),
+    //   entry: `${__dirname}/../lambdas/updateTable.ts`,
+    // });
 
     const processDeleteFn = new lambdanode.NodejsFunction(this, "process-delete-function", {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -82,6 +82,10 @@ export class EDAAppStack extends cdk.Stack {
 
     newImageTopic.addSubscription(
       new subs.SqsSubscription(imageProcessQueue) 
+    );
+
+    newImageTopic.addSubscription(
+      new subs.LambdaSubscription(processDeleteFn)
     );
 
     // Lambda functions
@@ -102,6 +106,12 @@ export class EDAAppStack extends cdk.Stack {
 
     imagesBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
+      new s3n.SnsDestination(newImageTopic)
+    );
+
+    imagesBucket.addEventNotification(
+      //Reference for OBJECT_REMOVED: https://stackoverflow.com/questions/58087772/aws-cdk-how-to-add-an-event-notification-to-an-existing-s3-bucket
+      s3.EventType.OBJECT_REMOVED,
       new s3n.SnsDestination(newImageTopic)
     );
 
