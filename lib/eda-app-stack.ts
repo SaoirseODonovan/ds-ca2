@@ -48,6 +48,10 @@ export class EDAAppStack extends cdk.Stack {
     const newImageTopic = new sns.Topic(this, "NewImageTopic", {
       displayName: "New Image topic",
     });
+
+    const newDescTopic = new sns.Topic(this, "NewDescTopic", {
+      displayName: "New Image description topic",
+    });
     
     const confirmationMailerFn = new lambdanode.NodejsFunction(this, "confirmation-mailer-function", {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -63,12 +67,12 @@ export class EDAAppStack extends cdk.Stack {
       entry: `${__dirname}/../lambdas/rejectionMailer.ts`,
     });
 
-    // const updateTableFn = new lambdanode.NodejsFunction(this, "update-table-function", {
-    //   runtime: lambda.Runtime.NODEJS_18_X,
-    //   memorySize: 1024,
-    //   timeout: cdk.Duration.seconds(3),
-    //   entry: `${__dirname}/../lambdas/updateTable.ts`,
-    // });
+    const updateTableFn = new lambdanode.NodejsFunction(this, "update-table-function", {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      memorySize: 1024,
+      timeout: cdk.Duration.seconds(3),
+      entry: `${__dirname}/../lambdas/updateTables.ts`,
+    });
 
     const processDeleteFn = new lambdanode.NodejsFunction(this, "process-delete-function", {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -87,6 +91,10 @@ export class EDAAppStack extends cdk.Stack {
     newImageTopic.addSubscription(
       new subs.LambdaSubscription(processDeleteFn)
     );
+
+    newDescTopic.addSubscription(
+      new subs.LambdaSubscription(updateTableFn)
+    )
 
     // Lambda functions
 
