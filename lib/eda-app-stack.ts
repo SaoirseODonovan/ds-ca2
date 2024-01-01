@@ -22,7 +22,7 @@ export class EDAAppStack extends cdk.Stack {
     });
 
   // Tables
-  //just like how tables were craeted in CA1 
+  //just like how tables were created in CA1 
     const imagesTable = new dynamodb.Table(this, "ImagesTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: { name: "ImageName", type: dynamodb.AttributeType.STRING },
@@ -92,9 +92,17 @@ export class EDAAppStack extends cdk.Stack {
       new subs.LambdaSubscription(processDeleteFn)
     );
 
+    //as shown in snsstart lab archive
     newDescTopic.addSubscription(
-      new subs.LambdaSubscription(updateTableFn)
-    )
+      new subs.LambdaSubscription(updateTableFn, {
+        filterPolicy: {
+          'comment_type': 
+          sns.SubscriptionFilter.stringFilter({
+            allowlist: ["Caption"]
+        })
+      }
+    }
+  ));
 
     // Lambda functions
 
@@ -143,6 +151,17 @@ export class EDAAppStack extends cdk.Stack {
 
     imagesBucket.grantRead(processImageFn);
     imagesTable.grantReadWriteData(processImageFn);
+
+    updateTableFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: [
+          //Reference for UpdateItem: https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_UpdateItem.html
+          'dynamodb:UpdateItem'
+        ],
+        //Reference for .tableArn: https://stackoverflow.com/questions/75514180/is-there-a-way-to-create-a-dynamodb-table-with-ttl-and-pitr-enabled-with-the-jav
+        resources: [imagesTable.tableArn],
+      })
+  );
 
     confirmationMailerFn.addToRolePolicy(
       new iam.PolicyStatement({
