@@ -81,6 +81,13 @@ export class EDAAppStack extends cdk.Stack {
       entry: `${__dirname}/../lambdas/processDelete.ts`,
     });
 
+    // const addDeleteMailerFn = new lambdanode.NodejsFunction(this, "add-delete-mailer-function", {
+    //   runtime: lambda.Runtime.NODEJS_18_X,
+    //   memorySize: 1024,
+    //   timeout: cdk.Duration.seconds(3),
+    //   entry: `${__dirname}/../lambdas/addDeleteMailer.ts`,
+    // });
+
     //Reference for adding subscription to sns topic:https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_sns_subscriptions/LambdaSubscription.html
     newImageTopic.addSubscription(new subs.LambdaSubscription(confirmationMailerFn));
 

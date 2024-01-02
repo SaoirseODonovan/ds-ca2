@@ -25,7 +25,7 @@ export const handler: SQSHandler = async (event: any) => {
           const message = `Your image: ${srcKey} has been rejected due to an invalid type. Its URL is s3://${srcBucket}/${srcKey}`;
           await sendRejectionEmail(message);
         } catch (error: unknown) {
-        console.log("Rejection email sent");
+        console.log("Rejection email not sent");
         }
       }
     }
