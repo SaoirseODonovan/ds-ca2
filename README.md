@@ -21,7 +21,7 @@ __YouTube Demo link__ - [https://youtu.be/uIdsZtIO-WE]
 + Confirmation Mailer - Fully implemented.
 + Rejection Mailer - Fully implemented.
 + Process Image - Fully implemented.
-+ Process Delete - Fully implemented.
++ Process Delete - (Images are deleting from S3 bucket, but not from DynamoDB Table) Partialy implemented.
 + Update Table - Fully implemented.
 
 ### Phase 3 (if relevant).
