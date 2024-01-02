@@ -14,23 +14,24 @@ __YouTube Demo link__ - [The URL of your demonstration of the app.]
 
 + Confirmation Mailer - Fully implemented.
 + Rejection Mailer - Fully implemented.
-+ Process Image - Partially implemented
++ Process Image - Fully implemented.
 
 ### Phase 2 (if relevant).
 
 + Confirmation Mailer - Fully implemented.
 + Rejection Mailer - Fully implemented.
 + Process Image - Fully implemented.
-+ Process Delete - Partially implemented.
++ Process Delete - Fully implemented.
 + Update Table - Fully implemented.
 
 ### Phase 3 (if relevant).
 
 + Confirmation Mailer - Fully implemented.
 + Rejection Mailer - Fully implemented.
-+ Process Image - Fully implemented
-+ etc
-+ etc
++ Process Image - Fully implemented.
++ One SNS Topic - Fully implemeneted.
++ Delete-Add Mailer (merging Confirmation mailer and Delete Mailer) - Partialy implemented.
++ Message Body Filtering (used once for the updateTableFn lambda) - Partialy implemented.
 
 ### Extra.
 
