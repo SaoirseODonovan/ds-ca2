@@ -45,12 +45,8 @@ export class EDAAppStack extends cdk.Stack {
       retentionPeriod: cdk.Duration.seconds(60),
     });
 
-    const newImageTopic = new sns.Topic(this, "NewImageTopic", {
-      displayName: "New Image topic",
-    });
-
-    const newDescTopic = new sns.Topic(this, "NewDescTopic", {
-      displayName: "New Image description topic",
+    const allUserEventsTopic = new sns.Topic(this, "AllUserEventsTopic", {
+      displayName: "All user events topic",
     });
     
     const confirmationMailerFn = new lambdanode.NodejsFunction(this, "confirmation-mailer-function", {
@@ -89,18 +85,20 @@ export class EDAAppStack extends cdk.Stack {
     // });
 
     //Reference for adding subscription to sns topic:https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_sns_subscriptions/LambdaSubscription.html
-    newImageTopic.addSubscription(new subs.LambdaSubscription(confirmationMailerFn));
 
-    newImageTopic.addSubscription(
+    allUserEventsTopic.addSubscription(
+      new subs.LambdaSubscription(confirmationMailerFn));
+
+    allUserEventsTopic.addSubscription(
       new subs.SqsSubscription(imageProcessQueue) 
     );
 
-    newImageTopic.addSubscription(
+    allUserEventsTopic.addSubscription(
       new subs.LambdaSubscription(processDeleteFn)
     );
 
     //as shown in snsstart lab archive
-    newDescTopic.addSubscription(
+    allUserEventsTopic.addSubscription(
       new subs.LambdaSubscription(updateTableFn, {
         filterPolicy: {
           'comment_type': 
@@ -129,13 +127,12 @@ export class EDAAppStack extends cdk.Stack {
 
     imagesBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
-      new s3n.SnsDestination(newImageTopic)
+      new s3n.SnsDestination(allUserEventsTopic)
     );
 
     imagesBucket.addEventNotification(
-      //Reference for OBJECT_REMOVED: https://stackoverflow.com/questions/58087772/aws-cdk-how-to-add-an-event-notification-to-an-existing-s3-bucket
       s3.EventType.OBJECT_REMOVED,
-      new s3n.SnsDestination(newImageTopic)
+      new s3n.SnsDestination(allUserEventsTopic)
     );
 
     const newImageEventSource = new events.SqsEventSource(imageProcessQueue, {
